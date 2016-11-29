@@ -1,0 +1,25 @@
+{
+  "name": "week10liri",
+  "version": "1.0.0",
+  "description": "Node.js LIRI Assignment",
+  "main": "keys.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/timothydlee/week10liri.git"
+  },
+  "author": "Tim",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/timothydlee/week10liri/issues"
+  },
+  "homepage": "https://github.com/timothydlee/week10liri#readme",
+  "dependencies": {
+    "inquirer": "^1.2.3",
+    "request": "^2.79.0",
+    "spotify": "^0.3.0",
+    "twitter": "^1.4.0"
+  }
+}
