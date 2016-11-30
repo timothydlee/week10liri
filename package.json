@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/timothydlee/week10liri#readme",
   "dependencies": {
+    "fs": "0.0.1-security",
     "inquirer": "^1.2.3",
     "request": "^2.79.0",
     "spotify": "^0.3.0",

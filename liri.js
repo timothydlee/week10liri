@@ -4,6 +4,8 @@ var request = require("request");
 var inquirer = require("inquirer");
 //Requirnig Spotify NPM Package
 var spotify = require("spotify");
+//Requiring fs NPM Package
+var fs = require("fs");
 //Referencing keys for twitter that are ignored on github
 var keys = require("./keys.js");
 //Requiring Twitter NPM package
@@ -82,14 +84,15 @@ function MovieSearch(name="Mr Nobody")
 			}
 		//Once a movie has been input by user
 		]).then(function(movie) {
-			//If no movie name is provided by user
-			if (!movie.movieName) {
-				//MovieSearch will perform without parameter
-				var x = new MovieSearch();
-				x.search();
-			//Else, if the user put a movie in, the MovieSearch object will search for that movie
-			} else {
+			//If a movie name is provided by user
+			if (movie.movieName) {
+				//MovieSearch will perform using that movie name as parameter
 				var x = new MovieSearch(movie.movieName);
+				x.search();
+			//Else, if there is no user input
+			} else {
+				//MovieSearch will use default parameter 'Mr Nobody'
+				var x = new MovieSearch();
 				x.search();
 			}
 		})
@@ -97,7 +100,7 @@ function MovieSearch(name="Mr Nobody")
 }
 
 //*******************************************************************
-//							SPOTIFY SECTION
+//						MUSICSEARCH SECTION (SPOTIFY)
 //*******************************************************************
 //Having an issue with the default song not showing up as "The Sign"
 function MusicSearch(song="The Sign") {
@@ -112,23 +115,24 @@ function MusicSearch(song="The Sign") {
 			}
 		//Once a song has been input by user
 		]).then(function(response) {
-			console.log(song);
-			//If no song name is provided by user
-			if (!response.song) {
-				//MusicSearch will perform without parameter
-				var x = new MusicSearch(song);
-				x.find();
-			//Else, if the user put a song in, MusicSearch will search for that movie
-			} else {
+			//If song name is provided by user
+			if (response.song) {
+				//MusicSearch will perform with that song as the parameter
 				var x = new MusicSearch(response.song);
+				x.find();
+			//Else, if the user does not input a song
+			} else {
+				//MusicSearch will search with the default parameter of "The Sign"
+				var x = new MusicSearch();
 				x.find();
 			}
 		});
 	};
 	//Uses the Spotify NPM to find the user's song
 	this.find = function() {
+		console.log("song inside find: " + song);
 		spotify.search({ type: 'track', query: song }, function(err, data) {
-			console.log(this.song);
+			console.log("?" + song);
 			if ( err ) {
 				console.log("Error occurred: " + err);
 				return;
@@ -139,7 +143,7 @@ function MusicSearch(song="The Sign") {
 				console.log("---------------------------");
 				//Console log the top 5 returns from Spotify's API
 				for (var j = 0; j < 5; j++) {
-					console.log(this.song);
+					console.log("Song searched for: " + song);
 					console.log("Artist(s): " + path[j].artists[0].name);
 					console.log("Song Title: " + path[j].name);
 					console.log("Preview Link of Song from Spotify: " + path[j].external_urls.spotify);
@@ -151,6 +155,51 @@ function MusicSearch(song="The Sign") {
 	}
 }
 
+//*******************************************************************
+//						DO WHAT IT SAYS SECTION
+//*******************************************************************
+
+function DoDefault() {
+	var dataArray = [];
+	fs.readFile("random.txt", "utf8", (err, data) => {
+		if (err) throw err;
+		dataArray = data.split(",");
+		console.log(dataArray);
+		methodSelect(dataArray[0], dataArray[1])
+	});
+}
+
+//*******************************************************************
+//						SWITCH CASE SECTION
+//*******************************************************************
+
+function methodSelect(userSelection, doCase) {
+	switch(userSelection) {
+		case "Movie Search":
+			if(!doCase){
+				var userMovie = new MovieSearch();
+				userMovie.prompt();
+				break;
+			} else {
+				var userMovie = new MovieSearch(doCase);
+				userMovie.search();
+				break;
+			}
+		case "Twitter Search":
+			TwitterSearch();
+			break;
+		case "Music Search":
+			if(!doCase) {
+				var userSong = new MusicSearch();
+				userSong.prompt();
+				break;
+			} else {
+				var userSong = new MusicSearch(doCase);
+				userSong.find();
+				break;
+			}
+	}
+}
 
 //*******************************************************************
 //						USER INTERFACE SECTION
@@ -163,21 +212,17 @@ function userSelection() {
 			type: "list",
 			name: "methodSelection",
 			message: "Please select a method.",
-			choices: ["Movie Search", "Twitter Search", "Music Search"]
+			choices: ["Movie Search", "Twitter Search", "Music Search", "Do What It Says"]
 		}
 	]).then(function(selection) {
-		if (selection.methodSelection === "Movie Search") {
-			var userMovie = new MovieSearch();
-			userMovie.prompt();
-		} else if (selection.methodSelection === "Twitter Search") {
-			TwitterSearch();
-		} else if (selection.methodSelection === "Music Search") {
-			var userSong = new MusicSearch();
-			userSong.prompt();
+		if (selection.methodSelection != "Do What It Says"){
+			methodSelect(selection.methodSelection);
+		} else {
+			DoDefault();
 		}
 	});
 }
 
-//Starting the program to let the user select what he/she wants to do
+//Starts the program
 userSelection();
 
