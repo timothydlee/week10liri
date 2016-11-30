@@ -21,25 +21,48 @@ var client = new Twitter({
 //*******************************************************************
 //							TWITTER SECTION
 //*******************************************************************
-//TO DO: Try go get twitter to be responsive to user input
-
-//This code works to get 20 tweets from asiarules - trying to make the screen_name a responsive one that defaults to asiarules
 //Twitter search function
-// var TwitterSearch = function() {
-// 	var params = 
-// 		{
-// 			screen_name: 'asiarules'	
-// 		};
-// 	console.log("TWEETS FROM: " + params.screen_name);	
-// 	client.get('statuses/user_timeline', params, function(error, tweets, response) {
-// 		if (!error) {
-// 			for (var i = 0; i < 20; i++){
-// 				console.log("Created at: " + tweets[i].user.created_at);
-// 				console.log(tweets[i].text + "\n");
-// 			}
-// 		}
-// 	});
-// }
+function TwitterSearch(screen_name="asiarules") {
+	this.screen_name = screen_name;
+	//Prompt to be able to have user input a handle that he/she wants to see tweets from
+	this.prompt = function() {
+		inquirer.prompt(
+		{
+			type: "input",
+			name: "handle",
+			message: "Enter a handle you would like to see tweets from: @"
+		}).then(function(name) {
+			//If user inputs value for name
+			if(name.handle){
+				//We create new instance of TwitterSearch constructor that passes that handle that the user input as the screen_name argument
+				var x = new TwitterSearch(name.handle);
+				//Then runs the search function of that new instance.
+				x.search();
+			//Else if the user does not put in a value
+			} else {
+				//We create a new instance of TwitterSearch that passes no parameter, which gracefully degrades to the default screen_name of asiarules
+				var x = new TwitterSearch();
+				//
+				x.search();
+			}
+		})
+	};
+	this.search = function() {	
+		//Setting our input screen_name variable to a property of screen_name within an object because Twitter's NPM searches for the property of the key 'screen_name'
+		var parameterA = {screen_name: screen_name};
+		//Twitter NPM's built in search for the statuses of a user as defined in paramterA.screen_name, that returns a successful callback of tweets
+		client.get("statuses/user_timeline", parameterA, function(error, tweets, response) {
+			//If call is successful
+			if (!error) {
+				//Program loops 20 times to return the latest 20 tweets and their timestamps
+				for (var i = 0; i < 20; i++) {
+					console.log("Created at: " + tweets[i].created_at);
+					console.log(tweets[i].text + "\n");
+				}
+			}
+		})
+	};
+}
 
 //*******************************************************************
 //							MOVIE SECTION
@@ -57,7 +80,6 @@ function MovieSearch(name="Mr Nobody")
 			//If no error and status code === 200 (ie, success), then information will print
 			if (!error && response.statusCode === 200) {
 				var omdbResponse = JSON.parse(body);
-				// console.log(this.name);
 				console.log("The title of the movie is " + omdbResponse.Title);
 				console.log("The movie came out in " + omdbResponse.Year);
 				console.log("The IMDB rating is " + omdbResponse.imdbRating);
@@ -102,7 +124,7 @@ function MovieSearch(name="Mr Nobody")
 //*******************************************************************
 //						MUSICSEARCH SECTION (SPOTIFY)
 //*******************************************************************
-//Having an issue with the default song not showing up as "The Sign"
+//Music search function with default song "The Sign"
 function MusicSearch(song="The Sign") {
 	this.song = song;
 	this.prompt = function() {
@@ -158,13 +180,17 @@ function MusicSearch(song="The Sign") {
 //*******************************************************************
 //						DO WHAT IT SAYS SECTION
 //*******************************************************************
-
+//This performs the action in the random.txt file
 function DoDefault() {
+	//Creates a blank array to be able to perform a split method
 	var dataArray = [];
+	//File System method readFile which reads the text within "random.txt"
 	fs.readFile("random.txt", "utf8", (err, data) => {
+		//If error occurs, will log the error to the screen
 		if (err) throw err;
+		//Else, splitting the array based on "," character, since the text of the random.txt is written as method,song/movie/twitterhandle
 		dataArray = data.split(",");
-		console.log(dataArray);
+		//Calls methodSelect function which handles which method to perform that passes parameters of 1. the method to call, and then 2. the value associated with that method (ie, movie name or song name or twitter handle to be searched)
 		methodSelect(dataArray[0], dataArray[1])
 	});
 }
@@ -172,29 +198,57 @@ function DoDefault() {
 //*******************************************************************
 //						SWITCH CASE SECTION
 //*******************************************************************
-
+//Switch case function that handles the selection of the method to use depending on user selection (first parameter only) or, if the user selects "Do What It Says" which passes in 2 parameters
 function methodSelect(userSelection, doCase) {
+	//Switch case that looks at the userSelection parameter
 	switch(userSelection) {
+		//If user or random.txt specifies Movie Search 
 		case "Movie Search":
+			//If a second parameter is not present (ie, DoDefault did not pass a second parmameter)
 			if(!doCase){
+				//Creates new instance of MovieSearch
 				var userMovie = new MovieSearch();
+				//Enters the prompt function of that constructed object, which allows user to then input value of the movie if he/she wants to
 				userMovie.prompt();
 				break;
+			//Else if second parameter is passed (ie, DoDefault does pass a second parameter)
 			} else {
+				//Creates new instance of MovieSearch that passes argument of that second parameter
 				var userMovie = new MovieSearch(doCase);
 				userMovie.search();
 				break;
 			}
+		//If user or random.txt specifies Twitter Search
 		case "Twitter Search":
-			TwitterSearch();
-			break;
+			//If a second parameter is not present (DoDefault did not pass a second parameter)
+			if(!doCase){
+				//Creates new instance of TwitterSearch
+				var userTwitter = new TwitterSearch();
+				//Enters the prompt function of that constructed object, which prompts user to input value of handle they want to receive tweets from
+				userTwitter.prompt();
+				break;
+			//If a second parameter is present (DoDefault does pass second parameter in random.txt)
+			} else {
+				//Creates new instance of TwitterSearch which passes the second parameter from random.txt that was extracted in DoDefault
+				var userTwitter = new TwitterSearch(doCase);
+				//Enters the new instance's search function using that second parameter that was passed
+				userTwitter.search();
+				break
+			}
+		//If user or random.txt specifies Music Search
 		case "Music Search":
+			//If a second parameter is not present (DoDefault did not pass a second parameter)
 			if(!doCase) {
+				//Creates new instance of MusicSearch
 				var userSong = new MusicSearch();
+				//Enters the prompt function of that constructed object, which prompts user to input value of song that they want to search
 				userSong.prompt();
 				break;
+			//Else if second parameter is present (DoDefault does pass second parameter from random.txt)
 			} else {
+				//Creates new instance of MusicSearch that passes random.txt's second parameter as extracted from DoDefault as the song name to search
 				var userSong = new MusicSearch(doCase);
+				//Searches for song in random.txt
 				userSong.find();
 				break;
 			}
@@ -225,4 +279,3 @@ function userSelection() {
 
 //Starts the program
 userSelection();
-
