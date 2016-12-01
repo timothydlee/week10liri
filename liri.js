@@ -152,9 +152,7 @@ function MusicSearch(song="The Sign") {
 	};
 	//Uses the Spotify NPM to find the user's song
 	this.find = function() {
-		console.log("song inside find: " + song);
 		spotify.search({ type: 'track', query: song }, function(err, data) {
-			console.log("?" + song);
 			if ( err ) {
 				console.log("Error occurred: " + err);
 				return;
@@ -165,7 +163,7 @@ function MusicSearch(song="The Sign") {
 				console.log("---------------------------");
 				//Console log the top 5 returns from Spotify's API
 				for (var j = 0; j < 5; j++) {
-					console.log("Song searched for: " + song);
+					console.log("Result #" + j + " for " + song);
 					console.log("Artist(s): " + path[j].artists[0].name);
 					console.log("Song Title: " + path[j].name);
 					console.log("Preview Link of Song from Spotify: " + path[j].external_urls.spotify);
@@ -256,6 +254,16 @@ function methodSelect(userSelection, doCase) {
 }
 
 //*******************************************************************
+//						LOGGING DATA SECTION
+//*******************************************************************
+function logInfo(info) {
+	var x = (Date.now() + " " + info + '\n')
+	fs.appendFile("log.txt", x, (err) => {
+		if (err) throw err;
+	});
+}
+
+//*******************************************************************
 //						USER INTERFACE SECTION
 //*******************************************************************
 //Function that lets user to initially select which method he wants to look at
@@ -269,6 +277,7 @@ function userSelection() {
 			choices: ["Movie Search", "Twitter Search", "Music Search", "Do What It Says"]
 		}
 	]).then(function(selection) {
+		logInfo(selection.methodSelection);
 		if (selection.methodSelection != "Do What It Says"){
 			methodSelect(selection.methodSelection);
 		} else {

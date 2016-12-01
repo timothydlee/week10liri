@@ -9,3 +9,4 @@ If the user does not provide any inputs, then there are default values that the 
 	Twitter: asiarules is the default twitter handle
 
 Keys to access asiarules Twitter is contained within a js file that is ignored via .gitignore
+Added limited logging function.
